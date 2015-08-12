@@ -56,6 +56,10 @@ OGTile *_tiles[NumberOfColumns][NumberOfRows];
 	return set;
 }
 
+- (BOOL)isPossibleSwap:(OGSwap *)swap {
+	return [self.possibleSwaps containsObject:swap];
+}
+
 - (void)detectPossibleSwaps {
 	
 	NSMutableSet *set = [NSMutableSet set];

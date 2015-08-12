@@ -27,5 +27,8 @@ static const NSInteger NumberOfColumns = 9;
 
 - (void)performSwap:(OGSwap *)swap;
 
+- (BOOL)isPossibleSwap:(OGSwap *)swap;
+
+
 @end
 

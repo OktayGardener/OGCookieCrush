@@ -23,4 +23,7 @@
 
 - (void)animateSwap:(OGSwap *)swap completion:(dispatch_block_t)completion;
 
+- (void)animateInvalidSwap:(OGSwap *)swap completion:(dispatch_block_t)completion;
+
+
 @end
