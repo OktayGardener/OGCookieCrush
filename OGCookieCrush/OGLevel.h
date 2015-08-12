@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "OGCookie.h"
 #import "OGTile.h"
+#import "OGSwap.h"
+
 
 static const NSInteger NumberOfRows = 9;
 static const NSInteger NumberOfColumns = 9;
@@ -23,4 +25,7 @@ static const NSInteger NumberOfColumns = 9;
 
 - (OGTile *)tileAtColumn:(NSInteger)column row:(NSInteger)row;
 
+- (void)performSwap:(OGSwap *)swap;
+
 @end
+

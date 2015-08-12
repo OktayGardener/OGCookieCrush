@@ -23,6 +23,7 @@
 		36BEF8DE1B7A3BB400088796 /* Level_3.json in Resources */ = {isa = PBXBuildFile; fileRef = 36BEF8D91B7A3BB400088796 /* Level_3.json */; };
 		36BEF8DF1B7A3BB400088796 /* Level_4.json in Resources */ = {isa = PBXBuildFile; fileRef = 36BEF8DA1B7A3BB400088796 /* Level_4.json */; };
 		36BEF8E51B7A3C9C00088796 /* OGTile.m in Sources */ = {isa = PBXBuildFile; fileRef = 36BEF8E41B7A3C9C00088796 /* OGTile.m */; };
+		36BEF8E81B7A5F0E00088796 /* OGSwap.m in Sources */ = {isa = PBXBuildFile; fileRef = 36BEF8E71B7A5F0E00088796 /* OGSwap.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,8 @@
 		36BEF8DA1B7A3BB400088796 /* Level_4.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Level_4.json; sourceTree = "<group>"; };
 		36BEF8E31B7A3C9C00088796 /* OGTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGTile.h; sourceTree = "<group>"; };
 		36BEF8E41B7A3C9C00088796 /* OGTile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OGTile.m; sourceTree = "<group>"; };
+		36BEF8E61B7A5F0E00088796 /* OGSwap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGSwap.h; sourceTree = "<group>"; };
+		36BEF8E71B7A5F0E00088796 /* OGSwap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OGSwap.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +95,8 @@
 				368B92471B7A20CB003307C3 /* OGCookie.m */,
 				368B92491B7A22AF003307C3 /* OGLevel.h */,
 				368B924A1B7A22AF003307C3 /* OGLevel.m */,
+				36BEF8E61B7A5F0E00088796 /* OGSwap.h */,
+				36BEF8E71B7A5F0E00088796 /* OGSwap.m */,
 				364EEC9C1B7A094600BB7949 /* Main.storyboard */,
 				364EEC9F1B7A094600BB7949 /* Assets.xcassets */,
 				364EECA11B7A094600BB7949 /* LaunchScreen.storyboard */,
@@ -205,6 +210,7 @@
 				364EEC9B1B7A094600BB7949 /* ViewController.m in Sources */,
 				36BEF8E51B7A3C9C00088796 /* OGTile.m in Sources */,
 				364EEC931B7A094600BB7949 /* AppDelegate.m in Sources */,
+				36BEF8E81B7A5F0E00088796 /* OGSwap.m in Sources */,
 				368B92481B7A20CB003307C3 /* OGCookie.m in Sources */,
 				364EEC961B7A094600BB7949 /* GameScene.m in Sources */,
 				364EEC901B7A094600BB7949 /* main.m in Sources */,

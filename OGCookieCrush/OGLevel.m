@@ -8,6 +8,12 @@
 
 #import "OGLevel.h"
 
+@interface OGLevel ()
+
+@property (nonatomic, strong) NSSet *possibleSwaps;
+
+@end
+
 @implementation OGLevel
 
 OGCookie *_cookies[NumberOfColumns][NumberOfRows];
@@ -40,8 +46,92 @@ OGTile *_tiles[NumberOfColumns][NumberOfRows];
 }
 
 - (NSSet *)shuffle {
-	return [self createInitialCookies];
+	NSSet *set;
+	do {
+		set = [self createInitialCookies];
+		[self detectPossibleSwaps];
+		NSLog(@"Possible swaps: %@", self.possibleSwaps);
+	} while ([self.possibleSwaps count] == 0);
+	
+	return set;
 }
+
+- (void)detectPossibleSwaps {
+	
+	NSMutableSet *set = [NSMutableSet set];
+	
+	for (NSInteger row = 0; row < NumberOfRows; row++) {
+		for (NSInteger column = 0; column < NumberOfColumns; column++) {
+			
+			OGCookie *cookie = _cookies[column][row];
+			if (cookie != nil) {
+				
+				// Is it possible to swap this cookie with the one on the right?
+				if (column < NumberOfColumns - 1) {
+					// Have a cookie in this spot? If there is no tile, there is no cookie.
+					OGCookie *other = _cookies[column + 1][row];
+					if (other != nil) {
+						// Swap them
+						_cookies[column][row] = other;
+						_cookies[column + 1][row] = cookie;
+						
+						// Is either cookie now part of a chain?
+						if ([self hasChainAtColumn:column + 1 row:row] ||
+							[self hasChainAtColumn:column row:row]) {
+							
+							OGSwap *swap = [[OGSwap alloc] init];
+							swap.cookieA = cookie;
+							swap.cookieB = other;
+							[set addObject:swap];
+						}
+						
+						// Swap them back
+						_cookies[column][row] = cookie;
+						_cookies[column + 1][row] = other;
+					}
+				}
+				
+				if (row < NumberOfRows - 1) {
+					
+					OGCookie *other = _cookies[column][row + 1];
+					if (other != nil) {
+						_cookies[column][row] = other;
+						_cookies[column][row + 1] = cookie;
+						
+						if ([self hasChainAtColumn:column row:row + 1] ||
+							[self hasChainAtColumn:column row:row]) {
+							
+							OGSwap *swap = [[OGSwap alloc] init];
+							swap.cookieA = cookie;
+							swap.cookieB = other;
+							[set addObject:swap];
+						}
+						
+						_cookies[column][row] = cookie;
+						_cookies[column][row + 1] = other;
+					}
+				}
+			}
+		}
+	}
+	
+	self.possibleSwaps = set;
+}
+
+- (BOOL)hasChainAtColumn:(NSInteger)column row:(NSInteger)row {
+	NSUInteger cookieType = _cookies[column][row].cookieType;
+ 
+	NSUInteger horzLength = 1;
+	for (NSInteger i = column - 1; i >= 0 && _cookies[i][row].cookieType == cookieType; i--, horzLength++) ;
+	for (NSInteger i = column + 1; i < NumberOfColumns && _cookies[i][row].cookieType == cookieType; i++, horzLength++) ;
+	if (horzLength >= 3) return YES;
+ 
+	NSUInteger vertLength = 1;
+	for (NSInteger i = row - 1; i >= 0 && _cookies[column][i].cookieType == cookieType; i--, vertLength++) ;
+	for (NSInteger i = row + 1; i < NumberOfRows && _cookies[column][i].cookieType == cookieType; i++, vertLength++) ;
+	return (vertLength >= 3);
+}
+
 
 - (NSSet *)createInitialCookies {
 	NSMutableSet *set = [NSMutableSet set];
@@ -49,7 +139,16 @@ OGTile *_tiles[NumberOfColumns][NumberOfRows];
 	for (NSInteger row = 0; row < NumberOfRows; row++) {
 		for (NSInteger column = 0; column < NumberOfColumns; column++) {
 			if (_tiles[column][row] != nil) {
-				NSUInteger cookieType = arc4random_uniform(NumberOfCookieTypes) + 1;
+				NSUInteger cookieType;
+				do {
+					 cookieType = arc4random_uniform(NumberOfCookieTypes) + 1;
+				} while ((column >= 2 &&
+						 _cookies[column - 1][row].cookieType == cookieType &&
+						 _cookies[column - 2][row].cookieType == cookieType) ||
+						 
+						 (row >= 2 && _cookies[column][row - 1].cookieType == cookieType &&
+						 _cookies[column][row - 2].cookieType == cookieType));
+				
 				OGCookie *cookie = [self createCookieAtColumn:column row:row withType:cookieType];
 				[set addObject:cookie];
 			}
@@ -103,5 +202,19 @@ OGTile *_tiles[NumberOfColumns][NumberOfRows];
 	return cookie;
 }
 
+- (void)performSwap:(OGSwap *)swap {
+	NSInteger columnA = swap.cookieA.column;
+	NSInteger rowA = swap.cookieA.row;
+	NSInteger columnB = swap.cookieB.column;
+	NSInteger rowB = swap.cookieB.row;
+ 
+	_cookies[columnA][rowA] = swap.cookieB;
+	swap.cookieB.column = columnA;
+	swap.cookieB.row = rowA;
+ 
+	_cookies[columnB][rowB] = swap.cookieA;
+	swap.cookieA.column = columnB;
+	swap.cookieA.row = rowB;
+}
 
 @end
