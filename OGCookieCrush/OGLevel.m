@@ -7,6 +7,7 @@
 //
 
 #import "OGLevel.h"
+#import "OGChain.h"
 
 @interface OGLevel ()
 
@@ -31,6 +32,8 @@ OGTile *_tiles[NumberOfColumns][NumberOfRows];
 				NSInteger tileRow = NumberOfRows - row - 1;
 				if ([value integerValue] == 1) {
 					_tiles[column][tileRow] = [[OGTile alloc] init];
+					self.targetScore = [dictionary[@"targetScore"] unsignedIntegerValue];
+					self.maximumMoves = [dictionary[@"moves"] unsignedIntegerValue];
 				}
 			}];
 		}];
@@ -56,8 +59,92 @@ OGTile *_tiles[NumberOfColumns][NumberOfRows];
 	return set;
 }
 
+- (void)calculateScores:(NSSet *)chains {
+	for (OGChain *chain in chains) {
+		chain.score = 60 * ([chain.cookies count] - 2);
+	}
+}
+
 - (BOOL)isPossibleSwap:(OGSwap *)swap {
 	return [self.possibleSwaps containsObject:swap];
+}
+
+- (NSSet *)detectHorizontalMatches {
+	// 1
+	NSMutableSet *set = [NSMutableSet set];
+ 
+	// 2
+	for (NSInteger row = 0; row < NumberOfRows; row++) {
+		for (NSInteger column = 0; column < NumberOfColumns - 2; ) {
+			
+			// 3
+			if (_cookies[column][row] != nil) {
+				NSUInteger matchType = _cookies[column][row].cookieType;
+				
+				// 4
+				if (_cookies[column + 1][row].cookieType == matchType
+					&& _cookies[column + 2][row].cookieType == matchType) {
+					// 5
+					OGChain *chain = [[OGChain alloc] init];
+					chain.chainType = ChainTypeHorizontal;
+					do {
+						[chain addCookie:_cookies[column][row]];
+						column += 1;
+					}
+					while (column < NumberOfColumns && _cookies[column][row].cookieType == matchType);
+					
+					[set addObject:chain];
+					continue;
+				}
+			}
+			
+			// 6
+			column += 1;
+		}
+	}
+	return set;
+}
+
+- (NSSet *)detectVerticalMatches {
+	NSMutableSet *set = [NSMutableSet set];
+ 
+	for (NSInteger column = 0; column < NumberOfColumns; column++) {
+		for (NSInteger row = 0; row < NumberOfRows - 2; ) {
+			if (_cookies[column][row] != nil) {
+				NSUInteger matchType = _cookies[column][row].cookieType;
+				
+				if (_cookies[column][row + 1].cookieType == matchType
+					&& _cookies[column][row + 2].cookieType == matchType) {
+					
+					OGChain *chain = [[OGChain alloc] init];
+					chain.chainType = ChainTypeVertical;
+					do {
+						[chain addCookie:_cookies[column][row]];
+						row += 1;
+					}
+					while (row < NumberOfRows && _cookies[column][row].cookieType == matchType);
+					
+					[set addObject:chain];
+					continue;
+				}
+			}
+			row += 1;
+		}
+	}
+	return set;
+}
+
+- (NSSet *)removeMatches {
+	NSSet *horizontalChains = [self detectHorizontalMatches];
+	NSSet *verticalChains = [self detectVerticalMatches];
+ 
+	[self removeCookies:horizontalChains];
+	[self removeCookies:verticalChains];
+	
+	[self calculateScores:horizontalChains];
+	[self calculateScores:verticalChains];
+ 
+	return [horizontalChains setByAddingObjectsFromSet:verticalChains];
 }
 
 - (void)detectPossibleSwaps {
@@ -122,6 +209,44 @@ OGTile *_tiles[NumberOfColumns][NumberOfRows];
 	self.possibleSwaps = set;
 }
 
+- (NSArray *)fillHoles {
+	NSMutableArray *columns = [NSMutableArray array];
+ 
+	// 1
+	for (NSInteger column = 0; column < NumberOfColumns; column++) {
+		
+		NSMutableArray *array;
+		for (NSInteger row = 0; row < NumberOfRows; row++) {
+			
+			// 2
+			if (_tiles[column][row] != nil && _cookies[column][row] == nil) {
+				
+				// 3
+				for (NSInteger lookup = row + 1; lookup < NumberOfRows; lookup++) {
+					OGCookie *cookie = _cookies[column][lookup];
+					if (cookie != nil) {
+						// 4
+						_cookies[column][lookup] = nil;
+						_cookies[column][row] = cookie;
+						cookie.row = row;
+						
+						// 5
+						if (array == nil) {
+							array = [NSMutableArray array];
+							[columns addObject:array];
+						}
+						[array addObject:cookie];
+						
+						// 6
+						break;
+					}
+				}
+			}
+		}
+	}
+	return columns;
+}
+
 - (BOOL)hasChainAtColumn:(NSInteger)column row:(NSInteger)row {
 	NSUInteger cookieType = _cookies[column][row].cookieType;
  
@@ -184,6 +309,39 @@ OGTile *_tiles[NumberOfColumns][NumberOfRows];
 	return dictionary;
 }
 
+- (NSArray *)fillNewCookies {
+	NSMutableArray *columns = [NSMutableArray array];
+ 
+	NSUInteger cookieType = 0;
+ 
+	for (NSInteger column = 0; column < NumberOfColumns; column++) {
+		
+		NSMutableArray *array;
+		
+		for (NSInteger row = NumberOfRows - 1; row >= 0 && _cookies[column][row] == nil; row--) {
+			
+			if (_tiles[column][row] != nil) {
+				
+				NSUInteger newCookieType;
+				do {
+					newCookieType = arc4random_uniform(NumberOfCookieTypes) + 1;
+				} while (newCookieType == cookieType);
+				cookieType = newCookieType;
+				
+				OGCookie *cookie = [self createCookieAtColumn:column row:row withType:cookieType];
+				
+				if (array == nil) {
+					array = [NSMutableArray array];
+					[columns addObject:array];
+				}
+				[array addObject:cookie];
+			}
+		}
+	}
+	return columns;
+}
+
+
 #pragma mark - OGCookie
 
 - (OGCookie *)cookieAtColumn:(NSInteger)column row:(NSInteger)row {
@@ -204,6 +362,14 @@ OGTile *_tiles[NumberOfColumns][NumberOfRows];
 	_cookies[column][row] = cookie;
 	
 	return cookie;
+}
+
+- (void)removeCookies:(NSSet *)chains {
+	for (OGChain *chain in chains) {
+		for (OGCookie *cookie in chain.cookies) {
+			_cookies[cookie.column][cookie.row] = nil;
+		}
+	}
 }
 
 - (void)performSwap:(OGSwap *)swap {

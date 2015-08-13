@@ -10,6 +10,7 @@
 #import "OGCookie.h"
 #import "OGLevel.h"
 #import "OGSwap.h"
+#import "OGChain.h"
 
 static const CGFloat TileWidth = 32.0;
 static const CGFloat TileHeight = 36.0;
@@ -229,6 +230,35 @@ static const CGFloat TileHeight = 36.0;
 	[self runAction:self.swapSound];
 }
 
+- (void)animateMatchedCookies:(NSSet *)chains completion:(dispatch_block_t)completion {
+ 
+	for (OGChain *chain in chains) {
+		for (OGCookie *cookie in chain.cookies) {
+			
+			// 1
+			if (cookie.sprite != nil) {
+				
+				// 2
+				SKAction *scaleAction = [SKAction scaleTo:0.1 duration:0.3];
+				scaleAction.timingMode = SKActionTimingEaseOut;
+				[cookie.sprite runAction:[SKAction sequence:@[scaleAction, [SKAction removeFromParent]]]];
+				
+				// 3
+				cookie.sprite = nil;
+			}
+		}
+	}
+ 
+	[self runAction:self.matchSound];
+ 
+	// 4
+	[self runAction:[SKAction sequence:@[
+										 [SKAction waitForDuration:0.3],
+										 [SKAction runBlock:completion]
+										 ]]];
+}
+
+
 - (void)animateInvalidSwap:(OGSwap *)swap completion:(dispatch_block_t)completion {
 	swap.cookieA.sprite.zPosition = 100;
 	swap.cookieB.sprite.zPosition = 90;
@@ -247,12 +277,90 @@ static const CGFloat TileHeight = 36.0;
 	[self runAction:self.invalidSwapSound];
 }
 
+- (void)animateNewCookies:(NSArray *)columns completion:(dispatch_block_t)completion {
+	// 1
+	__block NSTimeInterval longestDuration = 0;
+ 
+	for (NSArray *array in columns) {
+		
+		// 2
+		NSInteger startRow = ((OGCookie *)[array firstObject]).row + 1;
+		
+		[array enumerateObjectsUsingBlock:^(OGCookie *cookie, NSUInteger idx, BOOL *stop) {
+			
+			// 3
+			SKSpriteNode *sprite = [SKSpriteNode spriteNodeWithImageNamed:[cookie spriteName]];
+			sprite.position = [self pointForColumn:cookie.column row:startRow];
+			[self.cookiesLayer addChild:sprite];
+			cookie.sprite = sprite;
+			
+			// 4
+			NSTimeInterval delay = 0.1 + 0.2*([array count] - idx - 1);
+			
+			// 5
+			NSTimeInterval duration = (startRow - cookie.row) * 0.1;
+			longestDuration = MAX(longestDuration, duration + delay);
+			
+			// 6
+			CGPoint newPosition = [self pointForColumn:cookie.column row:cookie.row];
+			SKAction *moveAction = [SKAction moveTo:newPosition duration:duration];
+			moveAction.timingMode = SKActionTimingEaseOut;
+			cookie.sprite.alpha = 0;
+			[cookie.sprite runAction:[SKAction sequence:@[
+														  [SKAction waitForDuration:delay],
+														  [SKAction group:@[
+																			[SKAction fadeInWithDuration:0.05], moveAction, self.addCookieSound]]]]];
+		}];
+	}
+ 
+	// 7
+	[self runAction:[SKAction sequence:@[
+										 [SKAction waitForDuration:longestDuration],
+										 [SKAction runBlock:completion]
+										 ]]];
+}
+
+- (void)animateFallingCookies:(NSArray *)columns completion:(dispatch_block_t)completion {
+	// 1
+	__block NSTimeInterval longestDuration = 0;
+ 
+	for (NSArray *array in columns) {
+		[array enumerateObjectsUsingBlock:^(OGCookie *cookie, NSUInteger idx, BOOL *stop) {
+			CGPoint newPosition = [self pointForColumn:cookie.column row:cookie.row];
+			
+			// 2
+			NSTimeInterval delay = 0.05 + 0.15*idx;
+			
+			// 3
+			NSTimeInterval duration = ((cookie.sprite.position.y - newPosition.y) / TileHeight) * 0.1;
+			
+			// 4
+			longestDuration = MAX(longestDuration, duration + delay);
+			
+			// 5
+			SKAction *moveAction = [SKAction moveTo:newPosition duration:duration];
+			moveAction.timingMode = SKActionTimingEaseOut;
+			[cookie.sprite runAction:[SKAction sequence:@[
+														  [SKAction waitForDuration:delay],
+														  [SKAction group:@[moveAction, self.fallingCookieSound]]]]];
+		}];
+	}
+ 
+	// 6
+	[self runAction:[SKAction sequence:@[
+										 [SKAction waitForDuration:longestDuration],
+										 [SKAction runBlock:completion]
+										 ]]];
+}
+
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
 	self.swipeFromColumn = self.swipeFromRow = NSNotFound;
 	if (self.selectionSprite.parent != nil && self.swipeFromColumn != NSNotFound) {
 		[self hideSelectionIndicator];
 	}
 }
+
+
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
 	[self touchesEnded:touches withEvent:event];

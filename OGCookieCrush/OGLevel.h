@@ -17,6 +17,9 @@ static const NSInteger NumberOfColumns = 9;
 
 @interface OGLevel : NSObject
 
+@property (assign, nonatomic) NSUInteger targetScore;
+@property (assign, nonatomic) NSUInteger maximumMoves;
+
 - (NSSet *)shuffle;
 
 - (OGCookie *)cookieAtColumn:(NSInteger)column row:(NSInteger)row;
@@ -27,7 +30,15 @@ static const NSInteger NumberOfColumns = 9;
 
 - (void)performSwap:(OGSwap *)swap;
 
+- (void)detectPossibleSwaps;
+
 - (BOOL)isPossibleSwap:(OGSwap *)swap;
+
+- (NSSet *)removeMatches;
+
+- (NSArray *)fillHoles;
+
+- (NSArray *)fillNewCookies;
 
 
 @end

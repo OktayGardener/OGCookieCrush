@@ -23,6 +23,7 @@
 		369EA2C61B7B96C800C9E4D4 /* Ka-Ching.wav in Resources */ = {isa = PBXBuildFile; fileRef = 369EA2C01B7B96C800C9E4D4 /* Ka-Ching.wav */; };
 		369EA2C71B7B96C800C9E4D4 /* Mining by Moonlight.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 369EA2C11B7B96C800C9E4D4 /* Mining by Moonlight.mp3 */; };
 		369EA2C81B7B96C800C9E4D4 /* Scrape.wav in Resources */ = {isa = PBXBuildFile; fileRef = 369EA2C21B7B96C800C9E4D4 /* Scrape.wav */; };
+		369EA2CB1B7B9CAC00C9E4D4 /* OGChain.m in Sources */ = {isa = PBXBuildFile; fileRef = 369EA2CA1B7B9CAC00C9E4D4 /* OGChain.m */; };
 		36BEF8DB1B7A3BB400088796 /* Level_0.json in Resources */ = {isa = PBXBuildFile; fileRef = 36BEF8D61B7A3BB400088796 /* Level_0.json */; };
 		36BEF8DC1B7A3BB400088796 /* Level_1.json in Resources */ = {isa = PBXBuildFile; fileRef = 36BEF8D71B7A3BB400088796 /* Level_1.json */; };
 		36BEF8DD1B7A3BB400088796 /* Level_2.json in Resources */ = {isa = PBXBuildFile; fileRef = 36BEF8D81B7A3BB400088796 /* Level_2.json */; };
@@ -56,6 +57,8 @@
 		369EA2C01B7B96C800C9E4D4 /* Ka-Ching.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Ka-Ching.wav"; sourceTree = "<group>"; };
 		369EA2C11B7B96C800C9E4D4 /* Mining by Moonlight.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Mining by Moonlight.mp3"; sourceTree = "<group>"; };
 		369EA2C21B7B96C800C9E4D4 /* Scrape.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Scrape.wav; sourceTree = "<group>"; };
+		369EA2C91B7B9CAC00C9E4D4 /* OGChain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGChain.h; sourceTree = "<group>"; };
+		369EA2CA1B7B9CAC00C9E4D4 /* OGChain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OGChain.m; sourceTree = "<group>"; };
 		36BEF8D61B7A3BB400088796 /* Level_0.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Level_0.json; sourceTree = "<group>"; };
 		36BEF8D71B7A3BB400088796 /* Level_1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Level_1.json; sourceTree = "<group>"; };
 		36BEF8D81B7A3BB400088796 /* Level_2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Level_2.json; sourceTree = "<group>"; };
@@ -109,6 +112,8 @@
 				368B924A1B7A22AF003307C3 /* OGLevel.m */,
 				36BEF8E61B7A5F0E00088796 /* OGSwap.h */,
 				36BEF8E71B7A5F0E00088796 /* OGSwap.m */,
+				369EA2C91B7B9CAC00C9E4D4 /* OGChain.h */,
+				369EA2CA1B7B9CAC00C9E4D4 /* OGChain.m */,
 				364EEC9C1B7A094600BB7949 /* Main.storyboard */,
 				364EEC9F1B7A094600BB7949 /* Assets.xcassets */,
 				364EECA11B7A094600BB7949 /* LaunchScreen.storyboard */,
@@ -241,6 +246,7 @@
 				368B924B1B7A22AF003307C3 /* OGLevel.m in Sources */,
 				364EEC9B1B7A094600BB7949 /* ViewController.m in Sources */,
 				36BEF8E51B7A3C9C00088796 /* OGTile.m in Sources */,
+				369EA2CB1B7B9CAC00C9E4D4 /* OGChain.m in Sources */,
 				364EEC931B7A094600BB7949 /* AppDelegate.m in Sources */,
 				36BEF8E81B7A5F0E00088796 /* OGSwap.m in Sources */,
 				368B92481B7A20CB003307C3 /* OGCookie.m in Sources */,

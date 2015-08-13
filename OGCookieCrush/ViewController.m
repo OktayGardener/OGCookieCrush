@@ -9,11 +9,19 @@
 #import "ViewController.h"
 #import "GameScene.h"
 #import "OGLevel.h"
+#import "OGChain.h"
 
 @interface ViewController ()
 
 @property (nonatomic, strong) OGLevel *level;
 @property (nonatomic, strong) GameScene *scene;
+
+@property (nonatomic, assign) NSUInteger movesLeft;
+@property (nonatomic, assign) NSUInteger score;
+
+@property (nonatomic, weak) IBOutlet UILabel *targetLabel;
+@property (nonatomic, weak) IBOutlet UILabel *movesLabel;
+@property (nonatomic, weak) IBOutlet UILabel *scoreLabel;
 
 @end
 
@@ -60,6 +68,7 @@
 		if ([self.level isPossibleSwap:swap]) {
 			[self.level performSwap:swap];
 			[self.scene animateSwap:swap completion:^{
+				[self handleMatches];
 				self.view.userInteractionEnabled = YES;
 			}];
 		} else {
@@ -78,9 +87,15 @@
 	[self beginGame];
 }
 
+- (void)updateLabels {
+	self.targetLabel.text = [NSString stringWithFormat:@"%lu", (long)self.level.targetScore];
+	self.movesLabel.text = [NSString stringWithFormat:@"%lu", (long)self.movesLeft];
+	self.scoreLabel.text = [NSString stringWithFormat:@"%lu", (long)self.score];
+}
+
 - (BOOL)shouldAutorotate
 {
-    return YES;
+    return NO;
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations
@@ -103,7 +118,33 @@
 }
 
 - (void)beginGame {
+	self.movesLeft = self.level.maximumMoves;
+	self.score = 0;
+	[self updateLabels];
 	[self shuffle];
+}
+
+- (void)handleMatches {
+	NSSet *chains = [self.level removeMatches];
+	
+	if ([chains count] == 0) {
+		[self beginNextTurn];
+		return;
+	}
+	
+	[self.scene animateMatchedCookies:chains completion:^{
+		for (OGChain *chain in chains) {
+			self.score += chain.score;
+		}
+		[self updateLabels];
+  NSArray *columns = [self.level fillHoles];
+  [self.scene animateFallingCookies:columns completion:^{
+	  NSArray *columns = [self.level fillNewCookies];
+	  [self.scene animateNewCookies:columns completion:^{
+		  [self handleMatches];
+	  }];
+  }];
+	}];
 }
 
 - (void)shuffle {
@@ -111,5 +152,9 @@
 	[self.scene addSpritesForCookies:newCookies];
 }
 
+- (void)beginNextTurn {
+	[self.level detectPossibleSwaps];
+	self.view.userInteractionEnabled = YES;
+}
 
 @end
