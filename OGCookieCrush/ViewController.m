@@ -23,6 +23,12 @@
 @property (nonatomic, weak) IBOutlet UILabel *movesLabel;
 @property (nonatomic, weak) IBOutlet UILabel *scoreLabel;
 
+@property (nonatomic, weak) IBOutlet UILabel *gameOverLabel;
+@property (nonatomic, strong) UITapGestureRecognizer *tapGestureRecognizer;
+
+@property (weak, nonatomic) IBOutlet UIButton *shuffleButton;
+
+
 @end
 
 @implementation SKScene (Unarchive)
@@ -53,6 +59,8 @@
 	SKView *skView = (SKView *)self.view;
 	skView.multipleTouchEnabled = NO;
  
+	self.gameOverLabel.hidden = YES;
+	
 	// Create and configure the scene.
 	self.scene = [GameScene sceneWithSize:skView.bounds.size];
 	self.scene.scaleMode = SKSceneScaleModeAspectFill;
@@ -93,6 +101,29 @@
 	self.scoreLabel.text = [NSString stringWithFormat:@"%lu", (long)self.score];
 }
 
+- (void)showGameOver {
+	[self.scene animateGameOver];
+
+	self.gameOverLabel.hidden = NO;
+	self.shuffleButton.hidden = YES;
+	self.scene.userInteractionEnabled = NO;
+ 
+	self.tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hideGameOver)];
+	[self.view addGestureRecognizer:self.tapGestureRecognizer];
+	
+}
+
+- (void)hideGameOver {
+	[self.view removeGestureRecognizer:self.tapGestureRecognizer];
+	self.tapGestureRecognizer = nil;
+ 
+	self.shuffleButton.hidden = NO;
+	self.gameOverLabel.hidden = YES;
+	self.scene.userInteractionEnabled = YES;
+ 
+	[self beginGame];
+}
+
 - (BOOL)shouldAutorotate
 {
     return NO;
@@ -118,9 +149,11 @@
 }
 
 - (void)beginGame {
+	[self.scene animateBeginGame];
 	self.movesLeft = self.level.maximumMoves;
 	self.score = 0;
 	[self updateLabels];
+	[self.level resetComboMultiplier];
 	[self shuffle];
 }
 
@@ -147,14 +180,35 @@
 	}];
 }
 
+- (void)decrementMoves{
+	self.movesLeft--;
+	[self updateLabels];
+	
+	if (self.score >= self.level.targetScore) {
+		self.gameOverLabel.text = @"Level Complete!";
+		[self showGameOver];
+	} else if (self.movesLeft == 0) {
+		[self showGameOver];
+	}
+}
+
 - (void)shuffle {
+	[self.scene removeAllCookieSprites];
 	NSSet *newCookies = [self.level shuffle];
 	[self.scene addSpritesForCookies:newCookies];
 }
 
 - (void)beginNextTurn {
+	[self.level resetComboMultiplier];
 	[self.level detectPossibleSwaps];
+	[self decrementMoves];
 	self.view.userInteractionEnabled = YES;
 }
+
+- (IBAction)shuffleButtonPressed:(id)sender {
+	[self shuffle];
+	[self decrementMoves];
+}
+
 
 @end

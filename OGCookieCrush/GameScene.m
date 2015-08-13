@@ -45,6 +45,7 @@ static const CGFloat TileHeight = 36.0;
 		
 		self.gameLayer = [SKNode node];
 		[self addChild:self.gameLayer];
+		self.gameLayer.hidden = YES;
 		
 		CGPoint layerPosition = CGPointMake(-TileWidth*NumberOfRows/2, -TileHeight*NumberOfRows/2);
 		
@@ -72,8 +73,28 @@ static const CGFloat TileHeight = 36.0;
 	self.matchSound = [SKAction playSoundFileNamed:@"Ka-Ching.wav" waitForCompletion:NO];
 	self.fallingCookieSound = [SKAction playSoundFileNamed:@"Scrape.wav" waitForCompletion:NO];
 	self.addCookieSound = [SKAction playSoundFileNamed:@"Drip.wav" waitForCompletion:NO];
+	[SKLabelNode labelNodeWithFontNamed:@"Helvetica-Neue"];
+
 }
 
+- (void)animateGameOver {
+	SKAction *action = [SKAction moveBy:CGVectorMake(0, -self.size.height) duration:0.3];
+	action.timingMode = SKActionTimingEaseIn;
+	[self.gameLayer runAction:action];
+}
+
+- (void)animateBeginGame {
+	self.gameLayer.hidden = NO;
+ 
+	self.gameLayer.position = CGPointMake(0, self.size.height);
+	SKAction *action = [SKAction moveBy:CGVectorMake(0, -self.size.height) duration:0.3];
+	action.timingMode = SKActionTimingEaseOut;
+	[self.gameLayer runAction:action];
+}
+
+- (void)removeAllCookieSprites {
+	[self.cookiesLayer removeAllChildren];
+}
 
 - (void)addTiles {
 	for (NSInteger row = 0; row < NumberOfRows; row++) {
@@ -93,6 +114,16 @@ static const CGFloat TileHeight = 36.0;
 		sprite.position = [self pointForColumn:cookie.column row:cookie.row];
 		[self.cookiesLayer addChild:sprite];
 		cookie.sprite = sprite;
+		cookie.sprite.alpha = 0;
+		cookie.sprite.xScale = cookie.sprite.yScale = 0.5;
+		
+		[cookie.sprite runAction:[SKAction sequence:@[
+													  [SKAction waitForDuration:0.25 withRange:0.5],
+													  [SKAction group:@[
+																		[SKAction fadeInWithDuration:0.25],
+																		[SKAction scaleTo:1.0 duration:0.25]
+																		]]]]];
+		
 	}
 }
 
@@ -212,6 +243,30 @@ static const CGFloat TileHeight = 36.0;
 	}
 }
 
+- (void)animateScoreForChain:(OGChain *)chain {
+	// Figure out what the midpoint of the chain is.
+	OGCookie *firstCookie = [chain.cookies firstObject];
+	OGCookie *lastCookie = [chain.cookies lastObject];
+	CGPoint centerPosition = CGPointMake(
+										 (firstCookie.sprite.position.x + lastCookie.sprite.position.x)/2,
+										 (firstCookie.sprite.position.y + lastCookie.sprite.position.y)/2 - 8);
+ 
+	// Add a label for the score that slowly floats up.
+	SKLabelNode *scoreLabel = [SKLabelNode labelNodeWithFontNamed:@"GillSans-BoldItalic"];
+	scoreLabel.fontSize = 16;
+	scoreLabel.text = [NSString stringWithFormat:@"%lu", (long)chain.score];
+	scoreLabel.position = centerPosition;
+	scoreLabel.zPosition = 300;
+	[self.cookiesLayer addChild:scoreLabel];
+ 
+	SKAction *moveAction = [SKAction moveBy:CGVectorMake(0, 3) duration:0.7];
+	moveAction.timingMode = SKActionTimingEaseOut;
+	[scoreLabel runAction:[SKAction sequence:@[
+											   moveAction,
+											   [SKAction removeFromParent]
+											   ]]];
+}
+
 - (void)animateSwap:(OGSwap *)swap completion:(dispatch_block_t)completion {
 	// Put the cookie you started with on top.
 	swap.cookieA.sprite.zPosition = 100;
@@ -233,17 +288,16 @@ static const CGFloat TileHeight = 36.0;
 - (void)animateMatchedCookies:(NSSet *)chains completion:(dispatch_block_t)completion {
  
 	for (OGChain *chain in chains) {
+
+		[self animateScoreForChain:chain];
 		for (OGCookie *cookie in chain.cookies) {
 			
-			// 1
 			if (cookie.sprite != nil) {
 				
-				// 2
 				SKAction *scaleAction = [SKAction scaleTo:0.1 duration:0.3];
 				scaleAction.timingMode = SKActionTimingEaseOut;
 				[cookie.sprite runAction:[SKAction sequence:@[scaleAction, [SKAction removeFromParent]]]];
 				
-				// 3
 				cookie.sprite = nil;
 			}
 		}

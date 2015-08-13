@@ -12,6 +12,8 @@
 @interface OGLevel ()
 
 @property (nonatomic, strong) NSSet *possibleSwaps;
+@property (assign, nonatomic) NSUInteger comboMultiplier;
+
 
 @end
 
@@ -61,8 +63,13 @@ OGTile *_tiles[NumberOfColumns][NumberOfRows];
 
 - (void)calculateScores:(NSSet *)chains {
 	for (OGChain *chain in chains) {
-		chain.score = 60 * ([chain.cookies count] - 2);
+		chain.score = 60 * ([chain.cookies count] - 2) * self.comboMultiplier;
+		self.comboMultiplier++;
 	}
+}
+
+- (void)resetComboMultiplier {
+	self.comboMultiplier = 1;
 }
 
 - (BOOL)isPossibleSwap:(OGSwap *)swap {

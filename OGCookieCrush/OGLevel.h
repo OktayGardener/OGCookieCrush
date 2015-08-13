@@ -40,6 +40,8 @@ static const NSInteger NumberOfColumns = 9;
 
 - (NSArray *)fillNewCookies;
 
+- (void)resetComboMultiplier;
+
 
 @end
 
